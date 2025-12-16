@@ -162,6 +162,17 @@ class TrialBalanceXslx(models.AbstractModel):
         return 3
 
     def _generate_report_content(self, workbook, report, data, report_data):
+        # #region agent log
+        try:
+            import json as _json
+            import os as _os
+            _log_path = '/Users/agustin/Dev/Mountrix/nabrawind/.cursor/debug.log'
+            _os.makedirs(_os.path.dirname(_log_path), exist_ok=True)
+            with open(_log_path, 'a') as _f:
+                _f.write(_json.dumps({"id":"log_generate_content_entry","timestamp":__import__('time').time()*1000,"location":"trial_balance_xlsx.py:164","message":"_generate_report_content entry","data":{"data_keys":list(data.keys()) if data else None,"has_wizard_name":data.get("wizard_name") if data else None,"has_wizard_id":data.get("wizard_id") if data else None,"data_is_none":data is None},"sessionId":"debug-session","runId":"run1","hypothesisId":"H3"})+"\n")
+        except Exception:
+            pass
+        # #endregion
         res_data = self.env[
             "report.account_financial_report.trial_balance"
         ]._get_report_values(report, data)

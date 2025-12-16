@@ -166,6 +166,22 @@ class AgedPartnerBalanceReport(models.AbstractModel):
         ]
 
     def _get_report_values(self, docids, data):
+        # #region agent log
+        try:
+            import json as _json
+            import os as _os
+            _log_path = '/Users/agustin/Dev/Mountrix/nabrawind/.cursor/debug.log'
+            _os.makedirs(_os.path.dirname(_log_path), exist_ok=True)
+            with open(_log_path, 'a') as _f:
+                _f.write(_json.dumps({"id":"log_get_report_values_entry","timestamp":__import__('time').time()*1000,"location":"abstract_report.py:168","message":"_get_report_values entry","data":{"data_keys":list(data.keys()) if data else None,"has_wizard_name":data.get("wizard_name") if data else None,"has_wizard_id":data.get("wizard_id") if data else None,"data_is_none":data is None,"data_type":str(type(data)),"docids_type":str(type(docids)),"docids_has_name":hasattr(docids,"_name") if docids else None},"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"})+"\n")
+        except Exception:
+            pass
+        # #endregion
+        # Fix: If wizard_name is not in data, try to get it from docids if it's a recordset
+        if "wizard_name" not in data and docids and hasattr(docids, "_name") and hasattr(docids, "id"):
+            # docids is a recordset (wizard object)
+            data["wizard_name"] = docids._name
+            data["wizard_id"] = docids.id
         wizard = self.env[data["wizard_name"]].browse(data["wizard_id"])
         return {
             "limit_text": wizard._limit_text,

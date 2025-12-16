@@ -242,6 +242,17 @@ class TrialBalanceReportWizard(models.TransientModel):
     def _print_report(self, report_type):
         self.ensure_one()
         data = self._prepare_report_data()
+        # #region agent log
+        try:
+            import json as _json
+            import os as _os
+            _log_path = '/Users/agustin/Dev/Mountrix/nabrawind/.cursor/debug.log'
+            _os.makedirs(_os.path.dirname(_log_path), exist_ok=True)
+            with open(_log_path, 'a') as _f:
+                _f.write(_json.dumps({"id":"log_wizard_prepare_data","timestamp":__import__('time').time()*1000,"location":"trial_balance_wizard.py:244","message":"Wizard prepared data","data":{"data_keys":list(data.keys()) if data else None,"has_wizard_name":data.get("wizard_name") if data else None,"has_wizard_id":data.get("wizard_id") if data else None,"report_type":report_type},"sessionId":"debug-session","runId":"run1","hypothesisId":"H5"})+"\n")
+        except Exception:
+            pass
+        # #endregion
         if report_type == "xlsx":
             report_name = "a_f_r.report_trial_balance_xlsx"
         else:

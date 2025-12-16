@@ -859,6 +859,46 @@ class TrialBalanceReport(models.AbstractModel):
 
     def _get_report_values(self, docids, data):
         res = super()._get_report_values(docids, data)
+        # Fix: If data is incomplete, get missing values from wizard object
+        if docids and hasattr(docids, "_name") and hasattr(docids, "id"):
+            wizard = docids
+            # Complete data with wizard values if missing
+            if "wizard_id" not in data:
+                data["wizard_id"] = wizard.id
+            if "show_partner_details" not in data:
+                data["show_partner_details"] = wizard.show_partner_details
+            if "company_id" not in data:
+                data["company_id"] = wizard.company_id.id
+            if "partner_ids" not in data:
+                data["partner_ids"] = wizard.partner_ids.ids or []
+            if "journal_ids" not in data:
+                data["journal_ids"] = wizard.journal_ids.ids or []
+            if "account_ids" not in data:
+                data["account_ids"] = wizard.account_ids.ids or []
+            if "date_to" not in data:
+                data["date_to"] = wizard.date_to
+            if "date_from" not in data:
+                data["date_from"] = wizard.date_from
+            if "hide_account_at_0" not in data:
+                data["hide_account_at_0"] = wizard.hide_account_at_0
+            if "show_hierarchy" not in data:
+                data["show_hierarchy"] = wizard.show_hierarchy
+            if "show_hierarchy_level" not in data:
+                data["show_hierarchy_level"] = wizard.show_hierarchy_level
+            if "limit_hierarchy_level" not in data:
+                data["limit_hierarchy_level"] = wizard.limit_hierarchy_level
+            if "hide_parent_hierarchy_level" not in data:
+                data["hide_parent_hierarchy_level"] = wizard.hide_parent_hierarchy_level
+            if "foreign_currency" not in data:
+                data["foreign_currency"] = wizard.foreign_currency
+            if "only_posted_moves" not in data:
+                data["only_posted_moves"] = wizard.target_move == "posted"
+            if "unaffected_earnings_account" not in data:
+                data["unaffected_earnings_account"] = wizard.unaffected_earnings_account.id if wizard.unaffected_earnings_account else False
+            if "fy_start_date" not in data:
+                data["fy_start_date"] = wizard.fy_start_date
+            if "grouped_by" not in data:
+                data["grouped_by"] = wizard.grouped_by
         show_partner_details = data["show_partner_details"]
         wizard_id = data["wizard_id"]
         company = self.env["res.company"].browse(data["company_id"])
