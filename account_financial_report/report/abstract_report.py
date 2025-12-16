@@ -178,11 +178,19 @@ class AgedPartnerBalanceReport(models.AbstractModel):
             pass
         # #endregion
         # Fix: If wizard_name is not in data, try to get it from docids if it's a recordset
-        if "wizard_name" not in data and docids and hasattr(docids, "_name") and hasattr(docids, "id"):
+        if docids and hasattr(docids, "_name") and hasattr(docids, "id"):
             # docids is a recordset (wizard object)
-            data["wizard_name"] = docids._name
-            data["wizard_id"] = docids.id
-        wizard = self.env[data["wizard_name"]].browse(data["wizard_id"])
+            wizard = docids
+            # Complete data with wizard values if missing
+            if "wizard_name" not in data:
+                data["wizard_name"] = wizard._name
+            if "wizard_id" not in data:
+                data["wizard_id"] = wizard.id
+            # Complete common fields that all wizards have
+            if "company_id" not in data and hasattr(wizard, "company_id") and wizard.company_id:
+                data["company_id"] = wizard.company_id.id
+        else:
+            wizard = self.env[data["wizard_name"]].browse(data["wizard_id"])
         return {
             "limit_text": wizard._limit_text,
         }

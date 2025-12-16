@@ -302,6 +302,38 @@ class JournalLedgerReport(models.AbstractModel):
 
     def _get_report_values(self, docids, data):
         res = super()._get_report_values(docids, data)
+        # Fix: If data is incomplete, get missing values from wizard object
+        if docids and hasattr(docids, "_name") and hasattr(docids, "id"):
+            wizard = docids
+            # Complete data with wizard values if missing
+            if "wizard_id" not in data:
+                data["wizard_id"] = wizard.id
+            if "company_id" not in data and hasattr(wizard, "company_id") and wizard.company_id:
+                data["company_id"] = wizard.company_id.id
+            if "journal_ids" not in data and hasattr(wizard, "journal_ids"):
+                journals = wizard.journal_ids
+                if not journals and hasattr(wizard, "company_id") and wizard.company_id:
+                    # Not selecting a journal means that we'll display all journals
+                    journals = self.env["account.journal"].search(
+                        [("company_id", "=", wizard.company_id.id)]
+                    )
+                data["journal_ids"] = journals.ids if journals else []
+            if "date_from" not in data and hasattr(wizard, "date_from"):
+                data["date_from"] = wizard.date_from
+            if "date_to" not in data and hasattr(wizard, "date_to"):
+                data["date_to"] = wizard.date_to
+            if "move_target" not in data and hasattr(wizard, "move_target"):
+                data["move_target"] = wizard.move_target
+            if "foreign_currency" not in data and hasattr(wizard, "foreign_currency"):
+                data["foreign_currency"] = wizard.foreign_currency
+            if "sort_option" not in data and hasattr(wizard, "sort_option"):
+                data["sort_option"] = wizard.sort_option
+            if "group_option" not in data and hasattr(wizard, "group_option"):
+                data["group_option"] = wizard.group_option
+            if "with_account_name" not in data and hasattr(wizard, "with_account_name"):
+                data["with_account_name"] = wizard.with_account_name
+            if "with_auto_sequence" not in data and hasattr(wizard, "with_auto_sequence"):
+                data["with_auto_sequence"] = wizard.with_auto_sequence
         wizard_id = data["wizard_id"]
         wizard = self.env["journal.ledger.report.wizard"].browse(wizard_id)
         company = self.env["res.company"].browse(data["company_id"])

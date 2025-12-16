@@ -761,6 +761,44 @@ class GeneralLedgerReport(models.AbstractModel):
     # flake8: noqa: C901
     def _get_report_values(self, docids, data):
         res = super()._get_report_values(docids, data)
+        # Fix: If data is incomplete, get missing values from wizard object
+        if docids and hasattr(docids, "_name") and hasattr(docids, "id"):
+            wizard = docids
+            # Complete data with wizard values if missing
+            if "wizard_id" not in data:
+                data["wizard_id"] = wizard.id
+            if "company_id" not in data and hasattr(wizard, "company_id") and wizard.company_id:
+                data["company_id"] = wizard.company_id.id
+            if "date_from" not in data and hasattr(wizard, "date_from"):
+                data["date_from"] = wizard.date_from
+            if "date_to" not in data and hasattr(wizard, "date_to"):
+                data["date_to"] = wizard.date_to
+            if "partner_ids" not in data and hasattr(wizard, "partner_ids"):
+                data["partner_ids"] = wizard.partner_ids.ids or []
+            if "account_ids" not in data and hasattr(wizard, "account_ids"):
+                data["account_ids"] = wizard.account_ids.ids or []
+            if "cost_center_ids" not in data and hasattr(wizard, "cost_center_ids"):
+                data["cost_center_ids"] = wizard.cost_center_ids.ids or []
+            if "grouped_by" not in data and hasattr(wizard, "grouped_by"):
+                data["grouped_by"] = wizard.grouped_by
+            if "hide_account_at_0" not in data and hasattr(wizard, "hide_account_at_0"):
+                data["hide_account_at_0"] = wizard.hide_account_at_0
+            if "foreign_currency" not in data and hasattr(wizard, "foreign_currency"):
+                data["foreign_currency"] = wizard.foreign_currency
+            if "only_posted_moves" not in data and hasattr(wizard, "target_move"):
+                data["only_posted_moves"] = wizard.target_move == "posted"
+            if "unaffected_earnings_account" not in data and hasattr(wizard, "unaffected_earnings_account"):
+                data["unaffected_earnings_account"] = wizard.unaffected_earnings_account.id if wizard.unaffected_earnings_account else False
+            if "fy_start_date" not in data and hasattr(wizard, "fy_start_date"):
+                data["fy_start_date"] = wizard.fy_start_date
+            if "domain" not in data and hasattr(wizard, "_get_account_move_lines_domain"):
+                data["domain"] = wizard._get_account_move_lines_domain()
+            if "journal_ids" not in data and hasattr(wizard, "account_journal_ids"):
+                data["journal_ids"] = wizard.account_journal_ids.ids or []
+            if "centralize" not in data and hasattr(wizard, "centralize"):
+                data["centralize"] = wizard.centralize
+            if "show_cost_center" not in data and hasattr(wizard, "show_cost_center"):
+                data["show_cost_center"] = wizard.show_cost_center
         wizard_id = data["wizard_id"]
         company = self.env["res.company"].browse(data["company_id"])
         company_id = data["company_id"]

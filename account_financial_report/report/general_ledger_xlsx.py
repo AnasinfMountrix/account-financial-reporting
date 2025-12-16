@@ -197,15 +197,17 @@ class GeneralLedgerXslx(models.AbstractModel):
                             taxes_description += line["tax_line_id"][1]
                         for account_ids, value in line["analytic_distribution"].items():
                             for account_id in account_ids.split(","):
-                                if value < 100:
-                                    analytic_distribution += "%s %d%% " % (
-                                        analytic_data[int(account_id)]["name"],
-                                        value,
-                                    )
-                                else:
-                                    analytic_distribution += (
-                                        f"{analytic_data[int(account_id)]['name']} "
-                                    )
+                                account_id_int = int(account_id)
+                                if account_id_int in analytic_data:
+                                    if value < 100:
+                                        analytic_distribution += "%s %d%% " % (
+                                            analytic_data[account_id_int]["name"],
+                                            value,
+                                        )
+                                    else:
+                                        analytic_distribution += (
+                                            f"{analytic_data[account_id_int]['name']} "
+                                        )
                         line.update(
                             {
                                 "taxes_description": taxes_description,
@@ -308,15 +310,17 @@ class GeneralLedgerXslx(models.AbstractModel):
                                 "analytic_distribution"
                             ].items():
                                 for account_id in account_ids.split(","):
-                                    if value < 100:
-                                        analytic_distribution += "%s %d%% " % (
-                                            analytic_data[int(account_id)]["name"],
-                                            value,
-                                        )
-                                    else:
-                                        analytic_distribution += (
-                                            f"{analytic_data[int(account_id)]['name']} "
-                                        )
+                                    account_id_int = int(account_id)
+                                    if account_id_int in analytic_data:
+                                        if value < 100:
+                                            analytic_distribution += "%s %d%% " % (
+                                                analytic_data[account_id_int]["name"],
+                                                value,
+                                            )
+                                        else:
+                                            analytic_distribution += (
+                                                f"{analytic_data[account_id_int]['name']} "
+                                            )
                             line.update(
                                 {
                                     "taxes_description": taxes_description,
